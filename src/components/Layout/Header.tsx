@@ -1,5 +1,3 @@
-import { Inbox } from "@novu/react";
-import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { NovuProvider, PopoverNotificationCenter } from "@novu/notification-center"
 import { Button } from "../ui/button";
