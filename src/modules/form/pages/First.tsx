@@ -18,7 +18,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type SetStateAction } from "react";
 import { alluser, studentinfo } from "@/modules/service/student/StudentInfo";
 import { Input } from "@/components/ui/input";
 
@@ -77,7 +77,7 @@ export const First = () => {
               <div className="grid gap-2">
                 <Label htmlFor="email">Student Id</Label>
                 <Select
-                  onValueChange={(value) => {
+                  onValueChange={(value: SetStateAction<string>) => {
                     setSelectedId(value);
                     const selectedStudent = data?.find(student => student._id === value)
                     setSelectedName(selectedStudent?.name || "")
