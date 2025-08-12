@@ -15,3 +15,13 @@ export const studentinfo = async (
 
     return response;
 };
+
+export const allnotifications = async (subscriberId) => {
+  try {
+    const response = await Axios.get(`/notifications/${subscriberId}`);
+    return response.data; // <-- return the notifications array
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    throw error; // rethrow if you want the calling code to handle it
+  }
+};
