@@ -16,7 +16,7 @@ export const studentinfo = async (
     return response;
 };
 
-export const allnotifications = async (subscriberId) => {
+export const allnotifications = async (subscriberId: any) => {
   try {
     const response = await Axios.get(`/notifications/${subscriberId}`);
     return response.data; // <-- return the notifications array

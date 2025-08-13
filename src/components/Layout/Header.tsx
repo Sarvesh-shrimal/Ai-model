@@ -11,7 +11,7 @@ const menuItems = [
     { name: "About", from: "bottom" },
     { name: "Contact", from: "left" },
 ];
-function CustomNotificationCenter({ subscriberId }) {
+function CustomNotificationCenter({ subscriberId }: { subscriberId: string }) {
   const [open, setOpen] = useState(false);
   const [fetchedNotifications, setFetchedNotifications] = useState([]);
 
@@ -36,6 +36,8 @@ function CustomNotificationCenter({ subscriberId }) {
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   }, [fetchedNotifications]);
+
+  console.log(allNotifications);
 
   return (
     <div className="relative">
@@ -62,19 +64,19 @@ function CustomNotificationCenter({ subscriberId }) {
             </p>
           ) : (
             allNotifications.map((notif) => (
-              <div
-                key={notif._id}
-                className={`p-3 border-b cursor-pointer ${
-                  notif.read ? "bg-white" : "bg-blue-50"
-                }`}
-              >
-                <p className="font-semibold text-sm">
-                  {notif.payload?.title || "Notification"}
-                </p>
+              // <div
+              //   key={notif._id}
+              //   className={`p-3 border-b cursor-pointer ${
+              //     notif.read ? "bg-white" : "bg-blue-50"
+              //   }`}
+              // >
+              //   <p className="font-semibold text-sm">
+              //     {notif.payload?.title || "Notification"}
+              //   </p>
                 <p className="text-xs text-gray-600">
-                  {notif.payload?.description}
+                  {notif.payload?.message}
                 </p>
-              </div>
+              // </div>
             ))
           )}
         </div>
@@ -90,6 +92,7 @@ export const Header = () => {
 
   useEffect(() => {
     setSubscriberId(storedId);
+    console.log(storedId);
   }, []);
 
   return (
