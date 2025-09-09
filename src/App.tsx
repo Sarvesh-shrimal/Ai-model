@@ -4,14 +4,24 @@ import { First } from './modules/form/pages/First'
 import { Layout } from './components/Layout/Layout';
 import { Login } from './modules/auth/pages/Login';
 import PrivateRoute from './utils/PrivateRoutes';
+import { useEffect } from 'react';
+
+
+
 
 
 function App() {
+  useEffect(() => {
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, []);
+
 
 
   return (
     <Router>
-      
+
 
       <Routes>
         <Route path='login' element={<Login />} />
@@ -20,7 +30,7 @@ function App() {
             <Layout />
           </PrivateRoute>
         }>
-          
+
           <Route path='first' element={<First />} />
         </Route>
 

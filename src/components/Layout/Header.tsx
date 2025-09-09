@@ -4,86 +4,87 @@ import { Button } from "../ui/button";
 import { Bell } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { allnotifications } from "@/modules/service/student/StudentInfo";
+import { NotificationListener } from "@/utils/NotificationListner";
 
 
 const menuItems = [
-    { name: "Home", from: "right" },
-    { name: "About", from: "bottom" },
-    { name: "Contact", from: "left" },
+  { name: "Home", from: "right" },
+  { name: "About", from: "bottom" },
+  { name: "Contact", from: "left" },
 ];
-function CustomNotificationCenter({ subscriberId }: { subscriberId: string }) {
-  const [open, setOpen] = useState(false);
-  const [fetchedNotifications, setFetchedNotifications] = useState([]);
+// function CustomNotificationCenter({ subscriberId }: { subscriberId: string }) {
+//   const [open, setOpen] = useState(false);
+//   const [fetchedNotifications, setFetchedNotifications] = useState([]);
 
-  // Fetch notifications from backend
-  useEffect(() => {
-    if (open) {
-      const load = async () => {
-        const data = await allnotifications(subscriberId);
-        setFetchedNotifications(data);
-      };
-      load();
+//   // Fetch notifications from backend
+//   useEffect(() => {
+//     if (open) {
+//       const load = async () => {
+//         const data = await allnotifications(subscriberId);
+//         setFetchedNotifications(data);
+//       };
+//       load();
 
-      // Optional: Auto-refresh every 5s while dropdown is open
-      const interval = setInterval(load, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [open, subscriberId]);
+//       // Optional: Auto-refresh every 5s while dropdown is open
+//       const interval = setInterval(load, 5000);
+//       return () => clearInterval(interval);
+//     }
+//   }, [open, subscriberId]);
 
-  // Sort newest first
-  const allNotifications = useMemo(() => {
-    return [...fetchedNotifications].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }, [fetchedNotifications]);
+//   // Sort newest first
+//   const allNotifications = useMemo(() => {
+//     return [...fetchedNotifications].sort(
+//       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+//     );
+//   }, [fetchedNotifications]);
 
-  console.log(allNotifications);
+//   console.log(allNotifications);
 
-  return (
-    <div className="relative">
-      {/* Bell Button */}
-      <Button
-        variant="ghost"
-        className="relative"
-        onClick={() => setOpen((prev) => !prev)}
-      >
-        <Bell className="h-5 w-5" />
-        {allNotifications.filter((n) => !n.read).length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-xs">
-            {allNotifications.filter((n) => !n.read).length}
-          </span>
-        )}
-      </Button>
+//   return (
+//     <div className="relative">
+//       {/* Bell Button */}
+//       <Button
+//         variant="ghost"
+//         className="relative"
+//         onClick={() => setOpen((prev) => !prev)}
+//       >
+//         <Bell className="h-5 w-5" />
+//         {allNotifications.filter((n) => !n.read).length > 0 && (
+//           <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-xs">
+//             {allNotifications.filter((n) => !n.read).length}
+//           </span>
+//         )}
+//       </Button>
 
-      {/* Dropdown */}
-      {open && (
-        <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg overflow-hidden z-50">
-          {allNotifications.length === 0 ? (
-            <p className="text-gray-500 text-sm p-4 text-center">
-              No notifications
-            </p>
-          ) : (
-            allNotifications.map((notif) => (
-              // <div
-              //   key={notif._id}
-              //   className={`p-3 border-b cursor-pointer ${
-              //     notif.read ? "bg-white" : "bg-blue-50"
-              //   }`}
-              // >
-              //   <p className="font-semibold text-sm">
-              //     {notif.payload?.title || "Notification"}
-              //   </p>
-                <p className="text-xs text-gray-600">
-                  {notif.payload?.message}
-                </p>
-              // </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+//       {/* Dropdown */}
+//       {open && (
+//         <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg overflow-hidden z-50">
+//           {allNotifications.length === 0 ? (
+//             <p className="text-gray-500 text-sm p-4 text-center">
+//               No notifications
+//             </p>
+//           ) : (
+//             allNotifications.map((notif) => (
+//               // <div
+//               //   key={notif._id}
+//               //   className={`p-3 border-b cursor-pointer ${
+//               //     notif.read ? "bg-white" : "bg-blue-50"
+//               //   }`}
+//               // >
+//               //   <p className="font-semibold text-sm">
+//               //     {notif.payload?.title || "Notification"}
+//               //   </p>
+//                 <p className="text-xs text-gray-600">
+//                   {notif.payload?.message}
+//                 </p>
+//               // </div>
+//             ))
+//           )}
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 
 export const Header = () => {
   const [subscriberId, setSubscriberId] = useState("");
@@ -132,7 +133,32 @@ export const Header = () => {
 
       <div className="flex items-center">
         <div className="flex justify-end p-4">
-          <CustomNotificationCenter subscriberId={subscriberId} />
+          {/* <CustomNotificationCenter subscriberId={subscriberId} /> */}
+          <NovuProvider
+            subscriberId={"68bfec275eb808707ac81e14"}
+            applicationIdentifier="vHKf6fc5ojnD"
+          >
+            <NotificationListener />
+            <div className="flex justify-end p-4">
+              <PopoverNotificationCenter colorScheme="light" position="bottom-end"
+
+  
+
+              >
+
+                {({ unseenCount }) => (
+                  <Button variant="ghost" className="relative">
+                    <Bell className="h-5 w-5" />
+                    {(unseenCount ?? 0) > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-xs">
+                        {unseenCount ?? 0}
+                      </span>
+                    )}
+                  </Button>
+                )}
+              </PopoverNotificationCenter>
+            </div>
+          </NovuProvider>
         </div>
       </div>
     </div>
