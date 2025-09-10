@@ -1,10 +1,11 @@
 import { motion } from "framer-motion"
-import { NovuProvider, PopoverNotificationCenter, useNotifications } from "@novu/notification-center"
+import { NotificationCenter, NovuProvider, PopoverNotificationCenter, useNotifications } from "@novu/notification-center"
 import { Button } from "../ui/button";
 import { Bell } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { allnotifications } from "@/modules/service/student/StudentInfo";
-import { NotificationListener } from "@/utils/NotificationListner";
+import NovuInbox from "@/utils/NovuInbox";
+// import { NotificationListener } from "@/utils/NotificationListner";
 
 
 const menuItems = [
@@ -86,6 +87,114 @@ const menuItems = [
 //   );
 // }
 
+// export function NotificationListener() {
+
+
+//   const { notifications } = useNotifications();
+//   const lastId = useRef<string | null>(null);
+
+//   console.log(notifications);
+//   useEffect(() => {
+//     if (!notifications || notifications.length === 0) return;
+
+//     const latest = notifications[0];
+
+//     // Prevent duplicate popups
+//     if (lastId.current === latest._id) return;
+//     lastId.current = latest._id;
+
+//     if (Notification.permission === "granted") {
+//       new Notification("📢 New Notification", {
+//         body: typeof latest.content === "string"
+//           ? latest.content
+//           : "You have a new message",
+//         // icon: "/logo192.png", // optional app icon
+//       });
+//     }
+//   }, [notifications]);
+
+//   return null;
+// }
+function NotificationListener() {
+  const ctx = useNotifications();
+  const notifications = ctx?.notifications ?? [];
+  const bootstrapped = useRef(false);
+  const lastShownIdRef = useRef<string | null>(null);
+  const STORAGE_KEY = "novu:lastShownId";
+
+  // Load persisted last shown id, request permission once.
+  useEffect(() => {
+    lastShownIdRef.current = localStorage.getItem(STORAGE_KEY);
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission().catch(() => { });
+    }
+  }, []);
+
+  const showPopup = (n: any) => {
+    const body =
+      typeof n?.content === "string"
+        ? n.content
+        : n?.payload?.message || "You have a new message";
+
+    if (Notification.permission === "granted") {
+      new Notification("📢 New Notification", { body });
+    }
+  };
+
+  useEffect(() => {
+    if (!notifications.length) return;
+
+    // Build id list (newest first) and a lookup map
+    const ids: string[] = notifications
+      .map((n: any) => n?._id)
+      .filter(Boolean);
+    if (!ids.length) return;
+
+    // First fetch after load: mark as bootstrapped and DON'T pop anything
+    if (!bootstrapped.current) {
+      bootstrapped.current = true;
+      // Record the latest so refresh won't re-pop
+      if (ids[0] && lastShownIdRef.current !== ids[0]) {
+        lastShownIdRef.current = ids[0];
+        localStorage.setItem(STORAGE_KEY, ids[0]);
+      }
+      return;
+    }
+
+    // After bootstrap: show all that are newer than lastShownId
+    const lastSeen = lastShownIdRef.current;
+    const lastSeenIdx = lastSeen ? ids.indexOf(lastSeen) : -1;
+
+    // New ones are everything before lastSeenIdx; if not found, treat all as new
+    const newIds = lastSeenIdx === -1 ? ids : ids.slice(0, lastSeenIdx);
+
+    if (newIds.length) {
+      // Oldest → newest to keep order
+      const toShow = [...newIds].reverse();
+      // Optional small stagger so multiple popups aren't simultaneous
+      toShow.forEach((id, i) => {
+        const n = notifications.find((x: any) => x?._id === id);
+        if (!n) return;
+        setTimeout(() => showPopup(n), i * 250);
+      });
+
+      // Update last shown to the newest we processed
+      const newestProcessed = newIds[0]; // since ids are newest-first
+      lastShownIdRef.current = newestProcessed;
+      localStorage.setItem(STORAGE_KEY, newestProcessed);
+    } else {
+      // No brand-new items; ensure we track the current head
+      if (ids[0] && lastShownIdRef.current !== ids[0]) {
+        lastShownIdRef.current = ids[0];
+        localStorage.setItem(STORAGE_KEY, ids[0]);
+      }
+    }
+  }, [notifications]);
+
+  return null;
+}
+
+
 export const Header = () => {
   const [subscriberId, setSubscriberId] = useState("");
   const Name = localStorage.getItem("email") || "";
@@ -127,40 +236,60 @@ export const Header = () => {
         </nav>
       </div>
 
+
       <div>
         <Button>{Name}</Button>
       </div>
 
-      <div className="flex items-center">
-        <div className="flex justify-end p-4">
-          {/* <CustomNotificationCenter subscriberId={subscriberId} /> */}
-          <NovuProvider
-            subscriberId={"68bfec275eb808707ac81e14"}
-            applicationIdentifier="vHKf6fc5ojnD"
-          >
-            <NotificationListener />
-            <div className="flex justify-end p-4">
-              <PopoverNotificationCenter colorScheme="light" position="bottom-end"
+      <div className="flex items-center justify-end gap-2">
+        {/* ✅ Provide realtime context + headless center */}
+        <NovuProvider applicationIdentifier={"vHKf6fc5ojnD"} subscriberId={subscriberId || "68bfec275eb808707ac81e14"}>
+          {/* Headless Notification Center: mounted but hidden */}
+          <div className="hidden">
+            <NotificationCenter onUrlChange={() => { }} />
+          </div>
 
-  
+          {/* Your custom Inbox UI */}
+          <NovuInbox applicationIdentifier={"vHKf6fc5ojnD"} subscriberId={subscriberId || "68bfec275eb808707ac81e14"} />
 
-              >
-
-                {({ unseenCount }) => (
-                  <Button variant="ghost" className="relative">
-                    <Bell className="h-5 w-5" />
-                    {(unseenCount ?? 0) > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-xs">
-                        {unseenCount ?? 0}
-                      </span>
-                    )}
-                  </Button>
-                )}
-              </PopoverNotificationCenter>
-            </div>
-          </NovuProvider>
-        </div>
+          {/* System notifications */}
+          <NotificationListener />
+        </NovuProvider>
       </div>
     </div>
   );
 };
+
+
+// <div className="flex items-center">
+//         <div className="flex justify-end p-4">
+//           {/* <CustomNotificationCenter subscriberId={subscriberId} /> */}
+//           <NovuProvider
+//             subscriberId={subscriberId || "68bfec275eb808707ac81e14"}
+//             applicationIdentifier="vHKf6fc5ojnD"
+//           >
+//             {/* 🔹 Hidden inline center: fetches immediately on mount */}
+//             <div style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}>
+//               <NotificationCenter onUrlChange={() => { /* noop */ }} />
+//             </div>
+
+//             <NotificationListener />
+
+//             {/* Your visible bell (popover opens on click) */}
+//             <div className="flex justify-end p-4">
+//               <PopoverNotificationCenter colorScheme="light" position="bottom-end">
+//                 {({ unseenCount }) => (
+//                   <Button variant="ghost" className="relative" aria-label="Notifications">
+//                     <Bell className="h-5 w-5" />
+//                     {(unseenCount ?? 0) > 0 && (
+//                       <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 text-xs">
+//                         {unseenCount ?? 0}
+//                       </span>
+//                     )}
+//                   </Button>
+//                 )}
+//               </PopoverNotificationCenter>
+//             </div>
+//           </NovuProvider>
+//         </div>
+//       </div>

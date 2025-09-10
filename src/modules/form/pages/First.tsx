@@ -39,6 +39,7 @@ export const First = () => {
   useEffect(() => {
     const FetchData = async () => {
       const res = await alluser();
+      console.log(res);
       setData(res.data);
     }
     FetchData();
