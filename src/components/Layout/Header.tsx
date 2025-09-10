@@ -144,6 +144,7 @@ function NotificationListener() {
   useEffect(() => {
     if (!notifications.length) return;
 
+
     // Build id list (newest first) and a lookup map
     const ids: string[] = notifications
       .map((n: any) => n?._id)
@@ -245,9 +246,9 @@ export const Header = () => {
         {/* ✅ Provide realtime context + headless center */}
         <NovuProvider applicationIdentifier={"vHKf6fc5ojnD"} subscriberId={subscriberId || "68bfec275eb808707ac81e14"}>
           {/* Headless Notification Center: mounted but hidden */}
-          <div className="hidden">
+          {/* <div className="hidden">
             <NotificationCenter onUrlChange={() => { }} />
-          </div>
+          </div> */}
 
           {/* Your custom Inbox UI */}
           <NovuInbox applicationIdentifier={"vHKf6fc5ojnD"} subscriberId={subscriberId || "68bfec275eb808707ac81e14"} />
