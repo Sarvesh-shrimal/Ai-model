@@ -23,7 +23,8 @@ body,
 
 
 * {
-  scrollbar-width: 0px; /* For Firefox */
+  scrollbar-width: 0px;
+  /* For Firefox */
 }
 
 ::-webkit-scrollbar {
@@ -145,6 +146,7 @@ body,
 }
 
 @layer base {
+
   *,
   *::before,
   *::after {
@@ -154,4 +156,29 @@ body,
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Clamp any internal x-overflow from Novu container/lists */
+.novu-inbox {
+  overflow-x: hidden;
+}
+
+.novu-inbox [role="list"],
+.novu-inbox [data-inbox-list] {
+  overflow-x: hidden;
+}
+
+.novu-inbox * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Hide Novu's “new notifications” banner/toast */
+.novu-inbox [data-testid*="new"],
+.novu-inbox [data-test-id*="new"],
+.novu-inbox [class*="newNotification"],
+.novu-inbox [class*="NewNotification"],
+.novu-inbox .nv-new-notification,
+.novu-inbox .nv-notifications-refresh {
+  display: none !important;
 }
